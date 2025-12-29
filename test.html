@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>الاختبار الشامل: معادن الأرض</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background-color: #eef2f3; padding: 20px; text-align: right; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        h1 { color: #2c3e50; border-bottom: 3px solid #27ae60; padding-bottom: 10px; }
+        .question-box { margin-bottom: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 10px; }
+        .opt { display: block; padding: 10px; margin: 5px 0; background: #f9f9f9; border: 1px solid #ccc; border-radius: 5px; cursor: pointer; }
+        .opt:hover { background: #d5f5e3; }
+        .selected { background: #27ae60 !important; color: white; }
+        .btn { background: #2c3e50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 18px; }
+        #result { display: none; text-align: center; font-size: 24px; color: #27ae60; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>اختبار درس المعادن (شامل لجميع النقاط)</h1>
+        <div id="quiz-area"></div>
+        <button class="btn" onclick="checkScore()">إنهاء الاختبار وعرض النتيجة</button>
+        <div id="result"></div>
+        <button class="btn" style="background:#e67e22; margin-top:10px;" onclick="location.reload()">إعادة الاختبار بترتيب جديد</button>
+    </div>
+
+<script>
+    const data = [
+        { q: "أي مما يلي ليس من شروط تعريف المعدن؟", a: ["أن يكون مادة سائلة", "أن يوجد في الطبيعة", "أن يكون مادة غير عضوية", "أن يكون صلباً"], c: "أن يكون مادة سائلة" },
+        { q: "ماذا يسمى الترتيب الذري المنتظم والمتكرر في المعادن؟", a: ["البلورات", "الخامات", "المخدش", "الترسيب"], c: "البلورات" },
+        { q: "تتشكل المعادن من الصهير الصخري (ماجما) إذا برد:", a: ["تحت سطح الأرض ببطء", "فوق سطح الأرض بسرعة", "في مياه البحر", "داخل المختبر"], c: "تحت سطح الأرض ببطء" },
+        { q: "عندما يتبخر ماء البحر، تترسب الأيونات الذائبة لتشكل معادن مثل:", a: ["الملح الصخري", "الألماس", "الذهب", "الفضة"], c: "الملح الصخري" },
+        { q: "الصخر يختلف عن المعدن في أنه:", a: ["يتكون من معدن واحد أو أكثر", "مادة نقية دائماً", "ليس له شكل صلب", "يتكون من الغازات"], c: "يتكون من معدن واحد أو أكثر" },
+        { q: "أي المعادن التالية هو الأقسى على مقياس موهس؟", a: ["الألماس", "الكوارتز", "التلك", "الجبس"], c: "الألماس" },
+        { q: "خاصية المخدش تعني لون:", a: ["مسحوق المعدن", "المعدن من الخارج", "الضوء المنعكس", "البلورة"], c: "مسحوق المعدن" },
+        { q: "إذا انكسر المعدن لقطع ذات سطوح خشنة، فإن هذه الخاصية تسمى:", a: ["المكسر", "الانفصام", "اللمعان", "القساوة"], c: "المكسر" },
+        { q: "يُعد المعدن حجرًا كريمًا إذا كان:", a: ["نادرًا وجميلاً وقابلاً للصقل", "متوفراً بكثرة", "ليناً جداً", "يستخدم في البناء فقط"], c: "نادرًا وجميلاً وقابلاً للصقل" },
+        { q: "يسمى المعدن (خاماً) إذا كان يحوي مادة مفيدة يمكن بيعها بـ:", a: ["ربح", "خسارة", "سعر التكلفة", "بالمجان"], c: "ربح" },
+        { q: "أين يتكون الألماس عادةً؟", a: ["في ستار الأرض تحت ضغط مرتفع", "فوق قمم الجبال", "في قاع المحيطات", "من تبخر البحيرات"], c: "في ستار الأرض تحت ضغط مرتفع" },
+        { q: "كيف يوصف لمعان المعادن التي لا تبرق مثل الفلزات؟", a: ["غير فلزي (لؤلؤي أو باهت)", "فلزي لامع", "شفاف تماماً", "ليس لها لمعان"], c: "غير فلزي (لؤلؤي أو باهت)" }
+    ];
+
+    let userAnswers = Array(data.length).fill(null);
+    let shuffled = data.sort(() => Math.random() - 0.5);
+
+    function render() {
+        let html = '';
+        shuffled.forEach((item, i) => {
+            let options = [...item.a].sort(() => Math.random() - 0.5);
+            html += `<div class="question-box"><p><b>${i+1}. ${item.q}</b></p>`;
+            options.forEach(opt => {
+                html += `<div class="opt" onclick="select(${i}, '${opt}', this)">${opt}</div>`;
+            });
+            html += `</div>`;
+        });
+        document.getElementById('quiz-area').innerHTML = html;
+    }
+
+    function select(qIdx, val, el) {
+        userAnswers[qIdx] = val;
+        let parent = el.parentElement;
+        parent.querySelectorAll('.opt').forEach(child => child.classList.remove('selected'));
+        el.classList.add('selected');
+    }
+
+    function checkScore() {
+        let score = 0;
+        shuffled.forEach((item, i) => { if(userAnswers[i] === item.c) score++; });
+        let res = document.getElementById('result');
+        res.style.display = 'block';
+        res.innerHTML = `درجتك هي: ${score} من ${shuffled.length}`;
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    render();
+</script>
+</body>
+</html>
